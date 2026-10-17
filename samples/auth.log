@@ -1,0 +1,27 @@
+Oct 14 08:00:00 web01 CRON[811]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+Oct 14 08:02:00 web01 sshd[1201]: Accepted publickey for alice from 192.0.2.10 port 50122 ssh2: ED25519 SHA256:k3x
+Oct 14 08:40:00 web01 sshd[1290]: Failed password for deploy from 198.51.100.200 port 40001 ssh2
+Oct 14 08:41:00 web01 sshd[1291]: Failed password for deploy from 198.51.100.200 port 40002 ssh2
+Oct 14 08:42:00 web01 sshd[1292]: Accepted password for deploy from 198.51.100.200 port 40003 ssh2
+Oct 14 09:01:00 web01 sshd[2200]: Failed password for root from 203.0.113.45 port 51000 ssh2
+Oct 14 09:01:17 web01 sshd[2201]: Invalid user admin from 203.0.113.45 port 51001
+Oct 14 09:01:17 web01 sshd[2201]: Failed password for invalid user admin from 203.0.113.45 port 51001 ssh2
+Oct 14 09:01:34 web01 sshd[2202]: Invalid user test from 203.0.113.45 port 51002
+Oct 14 09:01:34 web01 sshd[2202]: Failed password for invalid user test from 203.0.113.45 port 51002 ssh2
+Oct 14 09:01:51 web01 sshd[2203]: Invalid user oracle from 203.0.113.45 port 51003
+Oct 14 09:01:51 web01 sshd[2203]: Failed password for invalid user oracle from 203.0.113.45 port 51003 ssh2
+Oct 14 09:02:08 web01 sshd[2204]: Failed password for ubuntu from 203.0.113.45 port 51004 ssh2
+Oct 14 09:02:25 web01 sshd[2205]: Failed password for ubuntu from 203.0.113.45 port 51005 ssh2
+Oct 14 09:02:42 web01 sshd[2206]: Failed password for root from 203.0.113.45 port 51006 ssh2
+Oct 14 09:02:59 web01 sshd[2207]: Failed password for ubuntu from 203.0.113.45 port 51007 ssh2
+Oct 14 09:03:16 web01 sshd[2208]: Invalid user postgres from 203.0.113.45 port 51008
+Oct 14 09:03:16 web01 sshd[2208]: Failed password for invalid user postgres from 203.0.113.45 port 51008 ssh2
+Oct 14 09:03:33 web01 sshd[2209]: Failed password for ubuntu from 203.0.113.45 port 51009 ssh2
+Oct 14 09:03:50 web01 sshd[2210]: Failed password for ubuntu from 203.0.113.45 port 51010 ssh2
+Oct 14 09:04:07 web01 sshd[2211]: Failed password for ubuntu from 203.0.113.45 port 51011 ssh2
+Oct 14 09:06:00 web01 sshd[2299]: Accepted password for ubuntu from 203.0.113.45 port 51099 ssh2
+Oct 14 09:07:00 web01 sudo[2310]:   ubuntu : TTY=pts/1 ; PWD=/home/ubuntu ; USER=root ; COMMAND=/bin/bash
+Oct 14 09:08:00 web01 useradd[2320]: new user: name=sysupdate, UID=1002, GID=1002, home=/home/sysupdate, shell=/bin/bash, from=/dev/pts/1
+Oct 14 09:08:20 web01 usermod[2321]: add 'sysupdate' to group 'sudo'
+Oct 14 09:36:00 web01 sudo[2400]:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/systemctl restart nginx
+Oct 14 11:15:00 web01 sshd[2500]: Accepted publickey for root from 192.0.2.20 port 60111 ssh2: RSA SHA256:q9w
