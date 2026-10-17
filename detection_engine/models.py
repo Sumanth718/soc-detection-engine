@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 
 @dataclass
@@ -61,8 +61,13 @@ class Alert:
     response: list[str] = field(default_factory=list)
     evidence: list[Event] = field(default_factory=list)
 
-    SEVERITY_ORDER = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
-
+    SEVERITY_ORDER: ClassVar[dict[str, int]] = {
+    "critical": 4,
+    "high": 3,
+    "medium": 2,
+    "low": 1,
+    "info": 0,
+}
     @property
     def severity_rank(self) -> int:
         return self.SEVERITY_ORDER.get(self.severity, 0)

@@ -77,8 +77,11 @@ def write_markdown(alerts: list[Alert], events: list[Event], path: Path) -> None
             f"- **Rule:** `{a.rule_id}`",
             f"- **MITRE ATT&CK:** {a.tactic} / [{a.technique} {a.technique_name}]({a.attack_url})",
             f"- **Entity:** `{a.entity}`",
-            f"- **Window:** {a.first_seen:%Y-%m-%d %H:%M:%S} to {a.last_seen:%H:%M:%S} UTC "
-            f"({a.event_count} events)",
+            (
+    f"- **Window:** {a.first_seen:%Y-%m-%d %H:%M:%S} "
+    f"to {a.last_seen:%H:%M:%S} UTC "
+    f"({a.event_count} events)"
+),
             "",
         ]
         if a.description:
