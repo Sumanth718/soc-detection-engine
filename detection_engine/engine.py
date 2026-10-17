@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from collections import defaultdict, deque
+from collections.abc import Iterable
 from datetime import timedelta
-from typing import Iterable
 
 from .geo import GeoResolver, haversine_km
 from .models import Alert, Event

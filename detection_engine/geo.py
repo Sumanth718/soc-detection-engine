@@ -43,7 +43,7 @@ class GeoResolver:
         self._networks = [(ipaddress.ip_network(cidr), loc) for cidr, loc in source.items()]
 
     @classmethod
-    def from_csv(cls, path: str | Path) -> "GeoResolver":
+    def from_csv(cls, path: str | Path) -> GeoResolver:
         """Load a CSV with columns ``network,country,city,lat,lon``."""
         table: dict[str, Location] = {}
         with open(path, newline="", encoding="utf-8") as handle:
