@@ -1,0 +1,99 @@
+# SSH authentication detections for Linux auth.log / secure.
+
+id: SSH-001
+title: SSH brute force from a single source
+severity: medium
+type: threshold
+mitre:
+  tactic: Credential Access
+  technique: T1110.001
+  name: "Brute Force: Password Guessing"
+description: >
+  Five or more failed SSH logins from the same IP address within five minutes.
+  Typical of automated password guessing against an exposed SSH service.
+filter:
+  source: linux_auth
+  event_type: ssh_login
+  outcome: failure
+group_by: [src_ip]
+threshold: 5
+window_minutes: 5
+response:
+  - Check whether the source IP belongs to your organization or a known scanner.
+  - Confirm no successful login followed from the same IP (see SSH-003).
+  - Block the IP at the firewall or with fail2ban if it is external.
+  - Disable password authentication and require SSH keys on the host.
+---
+id: SSH-002
+title: SSH password spraying across many accounts
+severity: high
+type: threshold
+mitre:
+  tactic: Credential Access
+  technique: T1110.003
+  name: "Brute Force: Password Spraying"
+description: >
+  One source tried four or more different usernames within ten minutes.
+  Spraying tries a few common passwords against many accounts to avoid lockouts.
+filter:
+  source: linux_auth
+  event_type: ssh_login
+  outcome: failure
+group_by: [src_ip]
+threshold: 4
+distinct: user
+window_minutes: 10
+response:
+  - List every targeted username and check whether any are valid accounts.
+  - Force a password reset for valid accounts that were targeted.
+  - Block the source IP and review other hosts for the same activity.
+---
+id: SSH-003
+title: Successful SSH login after repeated failures
+severity: critical
+type: sequence
+mitre:
+  tactic: Credential Access
+  technique: T1110
+  name: Brute Force
+description: >
+  A successful SSH login from an IP that failed at least five times in the
+  previous fifteen minutes. The brute force probably worked.
+filter:
+  source: linux_auth
+  event_type: ssh_login
+group_by: [src_ip]
+window_minutes: 15
+first:
+  filter: {outcome: failure}
+  min_count: 5
+then:
+  filter: {outcome: success}
+response:
+  - Treat the host as compromised and open an incident.
+  - Kill the active session and lock the account that logged in.
+  - Review commands run after the login (shell history, sudo logs, auditd).
+  - Look for persistence such as new users, SSH keys or cron jobs.
+  - Isolate the host if malicious activity is confirmed.
+---
+id: SSH-004
+title: Direct root login over SSH
+severity: high
+type: match
+mitre:
+  tactic: Initial Access
+  technique: T1078.003
+  name: "Valid Accounts: Local Accounts"
+description: >
+  The root account logged in directly over SSH. Direct root login removes
+  accountability and should be disabled with PermitRootLogin no.
+filter:
+  source: linux_auth
+  event_type: ssh_login
+  outcome: success
+  user: root
+group_by: [host, src_ip]
+response:
+  - Confirm with the system owner whether this login was expected.
+  - Set PermitRootLogin to no in sshd_config and reload sshd.
+  - Require administrators to log in as themselves and use sudo.

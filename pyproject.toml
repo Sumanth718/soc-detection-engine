@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "soc-detection-engine"
+version = "1.0.0"
+description = "Detect attacker behavior in Linux auth logs and AWS CloudTrail with YAML rules mapped to MITRE ATT&CK."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Sai Sumanth" }]
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0"]
+
+[project.scripts]
+soc-detect = "detection_engine.cli:main"
+
+[tool.setuptools]
+packages = ["detection_engine"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

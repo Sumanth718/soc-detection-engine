@@ -1,0 +1,129 @@
+# AWS identity detections based on CloudTrail.
+
+id: AWS-001
+title: AWS root account used
+severity: critical
+type: match
+mitre:
+  tactic: Privilege Escalation
+  technique: T1078.004
+  name: "Valid Accounts: Cloud Accounts"
+description: >
+  The AWS root user performed an action. Root has unrestricted access and
+  should only be used for a handful of account-level tasks.
+filter:
+  source: aws_cloudtrail
+  details.identity_type: Root
+group_by: [user, src_ip]
+response:
+  - Confirm with the account owner that root use was planned.
+  - Rotate the root password and verify hardware MFA is enabled.
+  - Delete any root access keys.
+---
+id: AWS-002
+title: Console login without MFA
+severity: medium
+type: match
+mitre:
+  tactic: Initial Access
+  technique: T1078.004
+  name: "Valid Accounts: Cloud Accounts"
+description: >
+  A user signed in to the AWS console with only a password. Stolen
+  passwords are enough to take over accounts without MFA.
+filter:
+  source: aws_cloudtrail
+  event_type: console_login
+  outcome: success
+  details.mfa_used: "No"
+group_by: [user]
+response:
+  - Contact the user and confirm the login.
+  - Enforce MFA with an IAM policy that denies actions when aws:MultiFactorAuthPresent is false.
+---
+id: AWS-003
+title: Repeated failed console logins
+severity: medium
+type: threshold
+mitre:
+  tactic: Credential Access
+  technique: T1110
+  name: Brute Force
+description: Three or more failed console logins for the same user within ten minutes.
+filter:
+  source: aws_cloudtrail
+  event_type: console_login
+  outcome: failure
+group_by: [user]
+threshold: 3
+window_minutes: 10
+response:
+  - Check the source IPs and whether a success followed.
+  - Reset the password if the user did not make these attempts.
+---
+id: AWS-004
+title: Impossible travel between console logins
+severity: high
+type: impossible_travel
+mitre:
+  tactic: Initial Access
+  technique: T1078.004
+  name: "Valid Accounts: Cloud Accounts"
+description: >
+  The same user signed in from two locations that are too far apart for the
+  time between logins. One of the sessions is likely using stolen credentials.
+filter:
+  source: aws_cloudtrail
+  event_type: console_login
+  outcome: success
+group_by: [user]
+max_speed_kmh: 900
+min_distance_km: 500
+response:
+  - Ask the user which login was theirs (VPNs can explain some cases).
+  - Revoke active sessions and reset the password and MFA device.
+  - Review what the suspicious session did in CloudTrail.
+---
+id: AWS-005
+title: Administrator policy attached to an IAM user
+severity: high
+type: match
+mitre:
+  tactic: Persistence
+  technique: T1098.003
+  name: "Account Manipulation: Additional Cloud Roles"
+description: >
+  AdministratorAccess was attached directly to a user. Attackers grant
+  themselves admin rights to keep control of the account.
+filter:
+  source: aws_cloudtrail
+  action: [AttachUserPolicy, AttachGroupPolicy, AttachRolePolicy]
+  outcome: success
+  details.request_parameters:
+    contains: AdministratorAccess
+group_by: [user]
+response:
+  - Identify who made the change and the target identity.
+  - Detach the policy if unapproved and review recent actions by both identities.
+---
+id: AWS-006
+title: Burst of access-denied API calls
+severity: medium
+type: threshold
+mitre:
+  tactic: Discovery
+  technique: T1580
+  name: Cloud Infrastructure Discovery
+description: >
+  Ten or more denied API calls from one identity in five minutes. Stolen keys
+  are often used to probe which permissions they have.
+filter:
+  source: aws_cloudtrail
+  outcome: failure
+  details.error_code: [AccessDenied, UnauthorizedOperation, Client.UnauthorizedOperation]
+group_by: [user]
+threshold: 10
+window_minutes: 5
+response:
+  - Check whether the identity's access keys were used from an unusual IP or user agent.
+  - Deactivate the keys if the activity is not explained.

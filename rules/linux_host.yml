@@ -1,0 +1,63 @@
+# Host persistence and privilege escalation detections for Linux.
+
+id: LNX-001
+title: New local user account created
+severity: medium
+type: match
+mitre:
+  tactic: Persistence
+  technique: T1136.001
+  name: "Create Account: Local Account"
+description: >
+  A new local account was created. Attackers add accounts to keep access
+  after the initial compromise.
+filter:
+  source: linux_auth
+  event_type: account_created
+group_by: [host, user]
+response:
+  - Verify the account against an approved change ticket.
+  - Disable the account if it is not authorized and review who created it.
+---
+id: LNX-002
+title: User added to a privileged group
+severity: high
+type: match
+mitre:
+  tactic: Persistence
+  technique: T1098
+  name: Account Manipulation
+description: >
+  An account was added to sudo, wheel, admin or root, which grants
+  administrator rights on the host.
+filter:
+  source: linux_auth
+  event_type: group_membership_change
+  details.group: [sudo, wheel, admin, root, adm]
+group_by: [host, user]
+response:
+  - Confirm the change was approved.
+  - Remove the account from the group if it was not.
+  - Correlate with LNX-001 in case the account was just created.
+---
+id: LNX-003
+title: Interactive root shell through sudo
+severity: medium
+type: match
+mitre:
+  tactic: Privilege Escalation
+  technique: T1548.003
+  name: "Abuse Elevation Control Mechanism: Sudo and Sudo Caching"
+description: >
+  A user used sudo to open an interactive root shell instead of running a
+  specific command. Common right after an account takeover.
+filter:
+  source: linux_auth
+  event_type: privilege_escalation
+  details.target_user: root
+  details.command:
+    regex: '(/bin/(ba|z|da)?sh\b|^su\b|/usr/bin/su\b|pty\.spawn|/bin/su\b)'
+group_by: [host, user]
+response:
+  - Check whether the user normally administers this host.
+  - Review commands executed in the root shell.

@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+reports/
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Local editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+# Git-related temporary files
+*.log

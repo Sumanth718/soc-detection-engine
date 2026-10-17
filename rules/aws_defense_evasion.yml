@@ -1,0 +1,100 @@
+# AWS detections for logging tampering, weakened controls and data exposure.
+
+id: AWS-101
+title: CloudTrail logging stopped or deleted
+severity: critical
+type: match
+mitre:
+  tactic: Defense Evasion
+  technique: T1562.008
+  name: "Impair Defenses: Disable or Modify Cloud Logs"
+description: >
+  A trail was stopped, deleted or reconfigured. Attackers do this to hide
+  what they do next.
+filter:
+  source: aws_cloudtrail
+  action: [StopLogging, DeleteTrail, UpdateTrail, PutEventSelectors]
+  outcome: success
+group_by: [user]
+response:
+  - Re-enable logging immediately (aws cloudtrail start-logging --name <trail>).
+  - Investigate every action by this identity since the change.
+  - Protect trails with an SCP that denies StopLogging and DeleteTrail.
+---
+id: AWS-102
+title: GuardDuty detector disabled or deleted
+severity: high
+type: match
+mitre:
+  tactic: Defense Evasion
+  technique: T1562.001
+  name: "Impair Defenses: Disable or Modify Tools"
+description: GuardDuty threat detection was turned off for the account.
+filter:
+  source: aws_cloudtrail
+  action: [DeleteDetector, DisassociateFromMasterAccount, DisassociateFromAdministratorAccount]
+  outcome: success
+group_by: [user]
+response:
+  - Re-create or re-enable the detector.
+  - Review the identity's activity around the time of the change.
+---
+id: AWS-103
+title: Security group opened to the internet
+severity: medium
+type: match
+mitre:
+  tactic: Defense Evasion
+  technique: T1562.007
+  name: "Impair Defenses: Disable or Modify Cloud Firewall"
+description: An inbound security group rule now allows traffic from 0.0.0.0/0.
+filter:
+  source: aws_cloudtrail
+  action: AuthorizeSecurityGroupIngress
+  outcome: success
+  details.request_parameters:
+    contains: 0.0.0.0/0
+group_by: [user]
+response:
+  - Check which port was opened. SSH (22) and RDP (3389) to the internet are high risk.
+  - Restrict the rule to known IP ranges or use Systems Manager Session Manager instead.
+---
+id: AWS-104
+title: S3 Block Public Access removed
+severity: high
+type: match
+mitre:
+  tactic: Collection
+  technique: T1530
+  name: Data from Cloud Storage
+description: >
+  S3 Block Public Access was deleted at bucket or account level. This is a
+  common step before exposing data publicly.
+filter:
+  source: aws_cloudtrail
+  action: [DeleteBucketPublicAccessBlock, DeleteAccountPublicAccessBlock]
+  outcome: success
+group_by: [user]
+response:
+  - Restore Block Public Access.
+  - Review bucket policies and ACLs for public grants.
+---
+id: AWS-105
+title: S3 bucket ACL grants public access
+severity: high
+type: match
+mitre:
+  tactic: Collection
+  technique: T1530
+  name: Data from Cloud Storage
+description: A bucket ACL was changed to grant access to AllUsers or AuthenticatedUsers.
+filter:
+  source: aws_cloudtrail
+  action: [PutBucketAcl, PutObjectAcl]
+  outcome: success
+  details.request_parameters:
+    regex: 'AllUsers|AuthenticatedUsers|public-read'
+group_by: [user]
+response:
+  - Remove the public grant and enable Object Ownership (bucket owner enforced).
+  - Check S3 server access logs for downloads while the bucket was public.
